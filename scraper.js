@@ -11,6 +11,12 @@ function getHolidays() {
         }) );
     }
 
+	function jalaliMonthName(monthNumber) {
+		var months = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+		return months[monthNumber - 1];
+	} 
+
 	function miladiMonthNumber(monthName) {
 		return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].findIndex(function(month) { return month === monthName }) + 1;
 	}
@@ -19,16 +25,32 @@ function getHolidays() {
 		return ["محرم", "صفر", "ربيع الاول", "ربيع الثاني", "جمادي الاولي", "جمادي الثانيه", "رجب", "شعبان", "رمضان", "شوال", "ذوالقعده", "ذوالحجه"].findIndex(function(month) { return month === monthName }) + 1;
 	}
 
+	function getEvent(month, day) {
+		var event = "جمعه";
+		var dayName = day + " " + jalaliMonthName(month);
+		$(".eventHoliday").map(function() {
+            var day = $(this).text().trim().split("\n").map(function(item) { return item.trim(); });
+			var monthName = day[0].split(" ")[1];
+			var dayNumber = parseNumbers(day[0].split(" ")[0]);
+			
+			if (dayName === dayNumber + " " + monthName) {
+				event = day[1];
+			}
+        });
+		
+		return event;
+	}
+
 	var miladiNewMonth = false;
 	var qamariNewMonth = false;
+	var jalaliYear = 0;
 
-
-	return $("div.holiday").map(function(day) {
+	var data = $("div.holiday").map(function(day) {
 		var dates = $(this).closest(".eventCalendar").find(".dates span");
 		
 		// Parse Jalali
 		var jalali = dates.find("a.jalali").attr("href").split("/");
-		var jalaliYear = jalali[jalali.length - 2];
+		jalaliYear = jalali[jalali.length - 2];
 		var jalaliMonth = jalali[jalali.length - 1];
 		var jalaliDay = parseNumbers($(this).find("div.jalali").text());
 
@@ -59,7 +81,19 @@ function getHolidays() {
 		return {
 			jalali: jalaliYear + "/"+ jalaliMonth + "/" + jalaliDay,
 			miladi: miladiYear + "-" + miladiMonth + "-" + miladiDay,
-			qamari: qamariYear + "/"+ qamariMonth + "/" + qamariDay
+			qamari: qamariYear + "/"+ qamariMonth + "/" + qamariDay,
+			event: getEvent(jalaliMonth, jalaliDay)
 		};
 	});
+
+	var firstDayOfYear = data.get().findIndex(function(item) { return item.jalali === jalaliYear + "/1/1" });
+	if(firstDayOfYear > 0) {
+		for(var i = 0; i < firstDayOfYear; i++) {
+			delete data[i];
+		}
+	}
+
+	return data.filter(function (el) {
+      return el != "";
+    });
 }
