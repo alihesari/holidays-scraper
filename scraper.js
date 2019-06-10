@@ -44,8 +44,9 @@ function getHolidays() {
 	var miladiNewMonth = false;
 	var qamariNewMonth = false;
 	var jalaliYear = 0;
+	var data = [];
 
-	var data = $("div.holiday").map(function(day) {
+	$("div.holiday").each(function() {
 		var dates = $(this).closest(".eventCalendar").find(".dates span");
 		
 		// Parse Jalali
@@ -78,15 +79,15 @@ function getHolidays() {
 		var qamariMonthName = (qamariNewMonth) ? qamariSecondMonth : qamariFirstMonth;
 		var qamariMonth = qamariMonthNumber(qamariMonthName);
 		
-		return {
+		data.push({
 			jalali: jalaliYear + "/"+ jalaliMonth + "/" + jalaliDay,
 			miladi: miladiYear + "-" + miladiMonth + "-" + miladiDay,
 			qamari: qamariYear + "/"+ qamariMonth + "/" + qamariDay,
 			event: getEvent(jalaliMonth, jalaliDay)
-		};
+		});
 	});
 
-	var firstDayOfYear = data.get().findIndex(function(item) { return item.jalali === jalaliYear + "/1/1" });
+	var firstDayOfYear = data.findIndex(function(item) { return item.jalali === jalaliYear + "/1/1" });
 	if(firstDayOfYear > 0) {
 		for(var i = 0; i < firstDayOfYear; i++) {
 			delete data[i];
